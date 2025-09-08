@@ -1,11 +1,23 @@
 {
   "name": "ser",
   "version": "0.0.1",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zametkifrontendera/ser.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/zametkifrontendera/ser/issues"
+  },
+  "homepage": "https://github.com/zametkifrontendera/ser#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
 }
