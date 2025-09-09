@@ -1,13 +1,21 @@
-const express = require('express');
+import express from 'express';
+import cors from 'cors';
+import { config } from './config/env.js';
+import { routes } from './routes.js';
+
 const app = express();
-const port = 5000;
 
 app.use(express.json());
+app.use(
+  cors({
+    origin: config.corsOrigins,
+    credentials: true,
+  })
+);
 
-app.get('/', (req, res) => {
-  res.send('Hello from Vmetke Backend!');
-});
+app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
+app.use('/api', routes);
 
-app.listen(port, () => {
-  console.log(`Backend is running at http://localhost:${port}`);
+app.listen(config.port, () => {
+  console.log(`API listening on http://localhost:${config.port}`);
 });
