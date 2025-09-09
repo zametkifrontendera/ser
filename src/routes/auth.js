@@ -1,28 +1,35 @@
-import express from "express";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
-import prisma from "@/shared/lib/prisma.js";
+import { Router } from "express";
+import bcrypt from "bcryptjs";
+import { PrismaClient } from "@prisma/client";
+import { generateToken } from "../lib/jwt.js";
 
-const router = express.Router();
+const prisma = new PrismaClient();
+const router = Router();
 
-router.post("/login", async (req, res) => {
-  const { emailOrPhone, password } = req.body;
-  const user = await prisma.user.findFirst({
-    where: {
-      OR: [
-        { email: emailOrPhone },
-        { phone: emailOrPhone }
-      ]
+router.post("/register", async (req, res) => {
+  try {
+    const { name, login, password } = req.body;
+
+    if (!name || !login || !password) {
+      return res.status(400).json({ message: "Все поля обязательны" });
     }
-  });
 
-  if (!user) return res.status(400).json({ message: "Пользователь не найден" });
+    const existing = await prisma.user.findUnique({ where: { login } });
+    if (existing) return res.status(400).json({ message: "Пользователь существует" });
 
-  const valid = await bcrypt.compare(password, user.password);
-  if (!valid) return res.status(400).json({ message: "Неверный пароль" });
+    const hashed = await bcrypt.hash(password, 10);
 
-  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-  res.json({ token });
+    const user = await prisma.user.create({
+      data: { name, login, password: hashed },
+    });
+
+    const token = generateToken(user.id);
+
+    res.status(201).json({ token, user: { id: user.id, name: user.name, login: user.login } });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Ошибка сервера" });
+  }
 });
 
 export default router;
